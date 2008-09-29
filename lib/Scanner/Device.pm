@@ -3,8 +3,8 @@
 # Description:         Physical Page Class for Scanners.
 # Original Author:     Dale M. Amon
 # Revised by:          $Author: amon $ 
-# Date:                $Date: 2008-08-25 19:58:36 $ 
-# Version:             $Revision: 1.1 $
+# Date:                $Date: 2008-08-28 23:31:43 $ 
+# Version:             $Revision: 1.2 $
 # License:	       LGPL 2.1, Perl Artistic or BSD
 #
 #==============================================================================
@@ -500,6 +500,9 @@ Dale Amon <amon@vnl.com>
 #                                CVS HISTORY
 #=============================================================================
 # $Log: Device.pm,v $
+# Revision 1.2  2008-08-28 23:31:43  amon
+# Major rewrite. Shuffled code between classes and add lots of features.
+#
 # Revision 1.1  2008-08-25 19:58:36  amon
 # Changed name of Scanner.pm to Scanner/Device.pm
 #

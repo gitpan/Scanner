@@ -58,6 +58,10 @@ Device
 	   so you can use the "hp:libusb:001:019" format.
 	  [DMA 20080817 - ? ]
 
+	- ARCHIVIST: Scanner class should scanimage to get a list of 
+	  available scanners for selection
+	  [DMA VERYOLD - ?]
+
 - Should job control the turn of of the lamp? I think so.
   [DMA 20080825 - ?]
 
@@ -81,6 +85,11 @@ Device
   supporting at the moment. My wish is for a better Perl programmer 
   interface to SANE than attempting to work through the scanimage CLI.
   [DMA 20080817 - ? ]
+
+- ARCHIVIST: speeding up the Mustek scanner
+	- why didn't the compile work?
+	- is depth=12 12b colour output worth using?
+  [DMA VERYOLD - ?]
 
 =================
 Page
@@ -112,6 +121,11 @@ Format
 
 =================
 Job
+
+- ARCHIVIST: need to set batch size based on how many pages
+  there are, not just a number. If I start autoscan late,
+  I could scan for more pages than there are!
+  [DMA 20070511-?]
 
 - When I get smarter code I will want to check the proposed batch size against
   the sheet count of the document and the number scanned so far and decide

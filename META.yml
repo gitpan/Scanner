@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                Scanner
-version:             0.02-4
+version:             0.02-5
 abstract:            Classes for handling page Scanning.
 license:             ~
 author:              

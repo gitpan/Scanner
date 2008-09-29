@@ -3,7 +3,7 @@
 # Description:         Page Scan Format Class.
 # Original Author:     Dale M. Amon
 # Revised by:          $Author: amon $ 
-# Date:                $Date: 2008-08-07 19:52:48 $ 
+# Date:                $Date: 2008-09-24 19:18:03 $ 
 # Version:             $Revision: 1.2 $
 # License:	       LGPL 2.1, Perl Artistic or BSD
 #
@@ -19,7 +19,7 @@ use vars qw{@ISA};
 #=============================================================================
 $Scanner::Format::DEFAULT_UNITS = undef;
 
-sub defaultUnitsAre {
+sub defaultUnitsAre ($$) {
   my ($class, $units) = @_; 
   defined $units || return 0;
   if (Scanner::Format->_validateUnits ($units)) {
@@ -32,7 +32,7 @@ sub defaultUnitsAre {
 #-----------------------------------------------------------------------------
 $Scanner::Format::DEFAULT_FORMAT = undef;
 
-sub defaultFormatIs {
+sub defaultFormatIs ($$) {
   my ($class, $format) = @_; 
   defined $format || return 0;
   
@@ -68,40 +68,52 @@ sub new {
 
 sub info ($$) {
   my ($self,$str) = @_;
-  my $u = $self->{'units'};
+  my $u           = $self->{'units'};
+  my ($pw,$pl)    = $self->UserDimensions;
+  my ($sw,$sl)    = ($self->_unconvertLength ($u,$self->{'width'}),
+		     $self->_unconvertLength ($u,$self->_actualHeight));
 
   printf  "[$str Format]\n" . 
-	  "Format:                    %s\n" .
+	  "Format string:             %s\n" .
 	  "Scan orientation:          %s\n" .
 	  "Paper type:                %s\n" .
 	  "Scan width:                %6.2f %s\n" .
 	  "Scan length:               %6.2f %s\n" .
-	  "Image calibrator margin:   %6.2f %s\n",
+	  "Calibrator margin:         %s\n" .
+	  "Total scan width:          %6.2f %s\n" .
+	  "Total scan length:         %6.2f %s\n",
 	  $self->{'format'}, 
-	  ($self->{'orientation'} eq "P") ? "Portrait" : "Landscape",
+	  ($self->{'orientation'} eq "P") ? "Scanner top is page top." :
+	                                    "Scanner left is page top.",
 	  ucfirst $self->{'papertype'},
-	  $self->_unconvertLength ($u,$self->{'width'}),      $u, 
-	  $self->_unconvertLength ($u,$self->{'height'}),     $u, 
-	  $self->_unconvertLength ($u,$self->{'calibrator'}), $u;
+	  $pw, $self->_unitsPrintString ($pw), 
+	  $pl, $self->_unitsPrintString ($pl), 
+	  ($self->{'calibrator'})         ? "On"      : "Off",
+	  $sw, $self->_unitsPrintString ($sw), 
+	  $sl, $self->_unitsPrintString ($sl);
+
   return $self;
 }
 
 #-----------------------------------------------------------------------------
 
-sub ScanDimensions {my $self = shift; 
-		    return ($self->{'width'}, $self->_actualHeight);}
+sub ScanDimensions ($) {
+  my $self = shift; 
+  return ($self->{'width'}, $self->_actualHeight);
+}
 
-sub UserDimensions {my $self = shift; 
-		    my $u    = $self->{'units'};
-		    my $w    = $self->_unconvertLength ($u,$self->{'width'});
-		    my $h    = $self->_unconvertLength ($u,$self->{'height'});
-		    return ($w,$h);
-		  }
+sub UserDimensions ($) {
+  my $self = shift; 
+  my $u    = $self->{'units'};
+  my $w    = $self->_unconvertLength ($u,$self->{'width'});
+  my $h    = $self->_unconvertLength ($u,$self->{'height'});
+  return ($w,$h);
+}
 
-sub landscape    {shift->{'orientation'} eq "L";}
-sub portrait     {shift->{'orientation'} eq "P";}
-sub orientation  {shift->{'orientation'};}
-sub format       {shift->{'format'};}
+sub landscape   ($) {shift->{'orientation'} eq "L";}
+sub portrait    ($) {shift->{'orientation'} eq "P";}
+sub orientation ($) {shift->{'orientation'};}
+sub format      ($) {shift->{'format'};}
 
 #=============================================================================
 #			INTERNAL CLASS METHODS
@@ -111,21 +123,25 @@ sub format       {shift->{'format'};}
 $Scanner::Format::Orientation = { "L"   => "Landscape", 
 			          "P"   => "Portrait"
 			    };
-sub _validateOrientation { 
-    shift; my $o = uc shift;
-    return exists $Scanner::Format::Orientation->{$o};
+sub _validateOrientation ($$) { 
+  shift; my $o = uc shift;
+  return exists $Scanner::Format::Orientation->{$o};
 }
 
 #-----------------------------------------------------------------------------
 #                              Unit     Units per mm
 #------------------------------------------------------
-$Scanner::Format::PaperUnits = { "mm"       =>  1.0, 
-			         "inches"   => 25.4,
+$Scanner::Format::PaperUnits = { "mm"       =>  1.0,
+			         "mm's"     =>  1.0,
+			         "mms"      =>  1.0,
+			         "inch"     => 25.4, 
+			         "inches"   => 25.4
 			       };
-sub _validateUnits { 
-    shift; my $u = lc shift;
-    return exists $Scanner::Format::PaperUnits->{$u};
+sub _validateUnits ($$) { 
+  shift; my $u = lc shift;
+  return exists $Scanner::Format::PaperUnits->{$u};
 }
+
 
 #-----------------------------------------------------------------------------
 # It returns a list (type,width,height), which may all be undef.
@@ -149,7 +165,7 @@ sub _paperSpecs ($$) {
 
 #-----------------------------------------------------------------------------
 
-sub _validateFormat {
+sub _validateFormat ($$) {
     my ($self, $format) = @_;
 
     my ($o,$w,$l) = split /[:x]/, $format, 3;
@@ -171,16 +187,38 @@ sub _validateFormat {
 # Convert a length from the current unit into the internally used mm. The unit
 # type is used to look up a conversion factor in the unit's hash.
 
-sub _convertLength {
+sub _convertLength ($$$) {
     my ($s,$u,$l) = @_;
     return $Scanner::Format::PaperUnits->{$u} * $l;
 }
 
 #-----------------------------------------------------------------------------
 
-sub _unconvertLength {
+sub _unconvertLength ($$$) {
     my ($s,$u,$l) = @_;
     return $l / $Scanner::Format::PaperUnits->{$u};
+}
+
+#-----------------------------------------------------------------------------
+
+my $UnitSingular = { "mm"       =>  "mm",
+		     "mm's"     =>  "mm",
+		     "mms"      =>  "mm",
+		     "inch"     =>  "inch", 
+		     "inches"   =>  "inch"
+		   };
+		      
+my $UnitPlural  = { "mm"       =>  "mm's",
+		    "mm's"     =>  "mm's",
+		    "mms"      =>  "mm's",
+		    "inch"     =>  "inches", 
+		    "inches"   =>  "inches"
+		  };
+
+sub _unitsPrintString ($$) {
+  my ($s,$l) = @_;
+  my $u      = $s->{'units'};
+  return ($l eq 1) ? $UnitSingular->{$u} : $UnitPlural->{$u};
 }
 
 #=============================================================================
@@ -190,14 +228,14 @@ sub _unconvertLength {
 # a conversion factor in the unit's hash. It returns the height to be scanned
 # which includes extra inch if calibrator is true.
 
-sub _actualHeight {
+sub _actualHeight ($) {
     my $self = shift; 
     return $self->{'height'} + (($self->{'calibrator'}) ? 25.4 : 0.0);
 }
 
 #-----------------------------------------------------------------------------
 
-sub _setPaperSpecs {
+sub _setPaperSpecs ($$) {
     my ($self, $params) = @_;
     my ($u,$p,$o,$w,$l);
 
@@ -230,7 +268,7 @@ sub _setPaperSpecs {
 
 #-----------------------------------------------------------------------------
 
-sub _setCalibrator {
+sub _setCalibrator ($$) {
     my ($self, $params) = @_;
 
     my $calibrator = (defined $params->{'calibrator'}) ?
@@ -428,18 +466,6 @@ the units default. Consistency is next to godliness I always say.
 
 =over 4
 
-=item B<($width, $height) = $obj-E>gt>ScanDimensions>
-
-Retrieve the page dimensions to be used for scanning. The height may include
-extra space for calibration devices as earlier discussed in the
-Scanner::Format->setDefaultCalibratorFlag section:
-
-	(width, height+calibratorheight)
-
-The scanner might of course have something to say about the height or width we
-have selected! That, however, is not the Format's problem. It is what it is
-and it might be too large for the scanner you have.
-
 =item B<$str = $obj-E<gt>format>
 
 Return the current page scan format string.
@@ -467,6 +493,18 @@ Return the orientation string, "L" or "P".
 =item B<$flg = $obj-E<gt>portrait>
 
 Return true if it uses a portrait page format.
+
+=item B<($width, $height) = $obj-E>gt>ScanDimensions>
+
+Retrieve the page dimensions to be used for scanning. The height may include
+extra space for calibration devices as earlier discussed in the
+Scanner::Format->setDefaultCalibratorFlag section:
+
+	(width, height+calibratorheight)
+
+The scanner might of course have something to say about the height or width we
+have selected! That, however, is not the Format's problem. It is what it is
+and it might be too large for the scanner you have.
 
 =item B<($width, $height) = $obj-E>gt>UserDimensions>
 
@@ -503,7 +541,13 @@ Dale Amon <amon@vnl.com>
 #=============================================================================
 #                                CVS HISTORY
 #=============================================================================
-# $Log: $
+# $Log: Format.pm,v $
+# Revision 1.2  2008-09-24 19:18:03  amon
+# Fix bug in info method printout; improve formating of info output.
+#
+# Revision 1.1  2008-08-28 23:31:43  amon
+# Major rewrite. Shuffled code between classes and add lots of features.
+#
 # Revision 1.2  2008-08-07 19:52:48  amon
 # Upgrade source format to current standard.
 #

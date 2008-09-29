@@ -1,3 +1,10 @@
+libscanner-perl (0.02-5) unstable; urgency=low
+
+  * Fixed bug in info method printout of calibrator ivar; improved the 
+    format of the info output to make it more intelligible.
+
+ -- Dale Amon <amon@vnl.com>  Wed, 24 Sep 2008 11:42:29 +0100
+
 libscanner-perl (0.02-4) unstable; urgency=low
 
   * Shift files to vendor install dirs instead of site install.

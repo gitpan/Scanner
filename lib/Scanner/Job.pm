@@ -3,8 +3,8 @@
 # Description:         Handle a scanning job, where job is usually a document.
 # Original Author:     Dale M. Amon
 # Revised by:          $Author: amon $ 
-# Date:                $Date: 2008-08-07 19:52:48 $ 
-# Version:             $Revision: 1.2 $
+# Date:                $Date: 2008-08-28 23:31:44 $ 
+# Version:             $Revision: 1.3 $
 # License:	       LGPL 2.1, Perl Artistic or BSD
 #
 #=============================================================================
@@ -441,6 +441,9 @@ Dale Amon <amon@vnl.com>
 #                                CVS HISTORY
 #=============================================================================
 # $Log: Job.pm,v $
+# Revision 1.3  2008-08-28 23:31:44  amon
+# Major rewrite. Shuffled code between classes and add lots of features.
+#
 # Revision 1.2  2008-08-07 19:52:48  amon
 # Upgrade source format to current standard.
 #
